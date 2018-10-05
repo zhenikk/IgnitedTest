@@ -1,6 +1,5 @@
 package com.eugens.ignitedtest.schedulers
 
-import android.support.annotation.Nullable
 import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.annotations.NonNull
@@ -8,9 +7,6 @@ import io.reactivex.schedulers.Schedulers
 
 
 class SchedulerProvider private constructor() : ISchedulerProvider {
-
-    @Nullable
-    private var INSTANCE: SchedulerProvider? = null
 
     private object Holder {
         val INSTANCE = SchedulerProvider()

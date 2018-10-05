@@ -7,6 +7,7 @@ import com.eugens.ignitedtest.schedulers.ISchedulerProvider
 import com.eugens.ignitedtest.utils.DateUtils
 import com.eugens.ignitedtest.view.UIData
 import io.reactivex.Observable
+import io.reactivex.ObservableTransformer
 import io.reactivex.disposables.CompositeDisposable
 import java.util.concurrent.TimeUnit
 
@@ -38,8 +39,7 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
                             }
                             UIData(newList, DateUtils.getFormattedDate(it.lastDate))
                         }
-                        .subscribeOn(schedulerProvider.computation())
-                        .observeOn(schedulerProvider.ui())
+                        .compose(applySchedulers())
                         .subscribe({
                             startTimer()
                             dataList.postValue(it.dataList)
@@ -53,8 +53,7 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
         isOldData.postValue(null) //When we start timer we mean that current Data is Actual
         disposables.add(
                 Observable.timer(TIMER_DELAY, TimeUnit.SECONDS)
-                        .subscribeOn(schedulerProvider.computation())
-                        .observeOn(schedulerProvider.ui())
+                        .compose(applySchedulers())
                         .subscribe({
                             isOldData.postValue(true)
                         }, {
@@ -66,5 +65,10 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
         disposables.clear()
     }
 
-
+    private fun <T> applySchedulers(): ObservableTransformer<T, T> {
+        return ObservableTransformer { upstream ->
+            upstream.subscribeOn(schedulerProvider.computation())
+                    .observeOn(schedulerProvider.ui())
+        }
+    }
 }

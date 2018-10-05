@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">IgnitedTest</string>
+    <string name="get_values">Get Values</string>
+</resources>

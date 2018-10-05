@@ -19,7 +19,7 @@ class MockServer : IServer {
     private fun getRandomDataList(): List<Int> {
         val list = ArrayList<Int>()
         val random = Random()
-        for (i in 0..RANDOM_NUMBERS_COUNT) {
+        for (i in 1..RANDOM_NUMBERS_COUNT) {
             list.add(random.nextInt(100))
         }
         return list

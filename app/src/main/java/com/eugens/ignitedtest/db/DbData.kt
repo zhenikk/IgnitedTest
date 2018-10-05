@@ -1,4 +1,3 @@
 package com.eugens.ignitedtest.db
 
-class DbData {
-}
+data class DbData(var listValues: List<Int>, var lastDate: Long)

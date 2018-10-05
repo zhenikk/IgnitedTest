@@ -6,6 +6,7 @@ import com.eugens.ignitedtest.datamodel.IDataModel
 import com.eugens.ignitedtest.schedulers.ISchedulerProvider
 import com.eugens.ignitedtest.utils.DateUtils
 import com.eugens.ignitedtest.view.UIData
+import io.reactivex.MaybeTransformer
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.disposables.CompositeDisposable
@@ -25,6 +26,7 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
 
     init {
         startTimer()
+        fetchDbData()
     }
 
     fun getActualData() {
@@ -48,6 +50,22 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
                         }))
     }
 
+    private fun fetchDbData() {
+        disposables.add(
+                dataModel.getDbData()
+                        .map {
+                            val newList = ArrayList<String>(it.listValues.size)
+                            for (myInt in it.listValues) {
+                                newList.add(myInt.toString())
+                            }
+                            UIData(newList, DateUtils.getFormattedDate(it.lastDate))
+                        }
+                        .compose(applyMaybeSchedulers())
+                        .subscribe({
+                            dataList.postValue(it.dataList)
+                            lastDate.postValue(it.formattedDate)
+                        }, {}))
+    }
 
     private fun startTimer() {
         isOldData.postValue(null) //When we start timer we mean that current Data is Actual
@@ -67,6 +85,13 @@ class MyViewModel(var dataModel: IDataModel, var schedulerProvider: ISchedulerPr
 
     private fun <T> applySchedulers(): ObservableTransformer<T, T> {
         return ObservableTransformer { upstream ->
+            upstream.subscribeOn(schedulerProvider.computation())
+                    .observeOn(schedulerProvider.ui())
+        }
+    }
+
+    private fun <T> applyMaybeSchedulers(): MaybeTransformer<T, T> {
+        return MaybeTransformer { upstream ->
             upstream.subscribeOn(schedulerProvider.computation())
                     .observeOn(schedulerProvider.ui())
         }
